@@ -1,0 +1,107 @@
+=======================================
+=======================================
+=======================================
+         New log starts here.          
+=======================================
+=======================================
+=======================================
+Starting program.
+Running experiment ( repetition 0 num_samples 5 probability 0.5 )
+Rng seed: 1744201404905648
+Running experiment ( repetition 1 num_samples 5 probability 0.5 )
+Rng seed: 1744201404906390
+Running experiment ( repetition 2 num_samples 5 probability 0.5 )
+Rng seed: 1744201404906553
+Running experiment ( repetition 3 num_samples 5 probability 0.5 )
+Rng seed: 1744201404906695
+Running experiment ( repetition 4 num_samples 5 probability 0.5 )
+Rng seed: 1744201404906854
+mean 0.48 std 0.09797958971132709
+Running experiment ( repetition 0 num_samples 5 probability 0.75 )
+Rng seed: 1744201404907199
+Running experiment ( repetition 1 num_samples 5 probability 0.75 )
+Rng seed: 1744201404907341
+Running experiment ( repetition 2 num_samples 5 probability 0.75 )
+Rng seed: 1744201404907475
+Running experiment ( repetition 3 num_samples 5 probability 0.75 )
+Rng seed: 1744201404907609
+Running experiment ( repetition 4 num_samples 5 probability 0.75 )
+Rng seed: 1744201404907751
+mean 0.5599999999999999 std 0.19595917942265423
+Running experiment ( repetition 0 num_samples 5 probability 0.9 )
+Rng seed: 1744201404908010
+Running experiment ( repetition 1 num_samples 5 probability 0.9 )
+Rng seed: 1744201404908144
+Running experiment ( repetition 2 num_samples 5 probability 0.9 )
+Rng seed: 1744201404908274
+Running experiment ( repetition 3 num_samples 5 probability 0.9 )
+Rng seed: 1744201404908413
+Running experiment ( repetition 4 num_samples 5 probability 0.9 )
+Rng seed: 1744201404908539
+mean 0.8800000000000001 std 0.16
+Running experiment ( repetition 0 num_samples 10 probability 0.5 )
+Rng seed: 1744201404908783
+Running experiment ( repetition 1 num_samples 10 probability 0.5 )
+Rng seed: 1744201404908917
+Running experiment ( repetition 2 num_samples 10 probability 0.5 )
+Rng seed: 1744201404909047
+Running experiment ( repetition 3 num_samples 10 probability 0.5 )
+Rng seed: 1744201404909170
+Running experiment ( repetition 4 num_samples 10 probability 0.5 )
+Rng seed: 1744201404909296
+mean 0.4600000000000001 std 0.23323807579381203
+Running experiment ( repetition 0 num_samples 10 probability 0.75 )
+Rng seed: 1744201404909533
+Running experiment ( repetition 1 num_samples 10 probability 0.75 )
+Rng seed: 1744201404909664
+Running experiment ( repetition 2 num_samples 10 probability 0.75 )
+Rng seed: 1744201404909806
+Running experiment ( repetition 3 num_samples 10 probability 0.75 )
+Rng seed: 1744201404909945
+Running experiment ( repetition 4 num_samples 10 probability 0.75 )
+Rng seed: 1744201404910067
+mean 0.6799999999999999 std 0.1469693845669907
+Running experiment ( repetition 0 num_samples 10 probability 0.9 )
+Rng seed: 1744201404910294
+Running experiment ( repetition 1 num_samples 10 probability 0.9 )
+Rng seed: 1744201404910426
+Running experiment ( repetition 2 num_samples 10 probability 0.9 )
+Rng seed: 1744201404910550
+Running experiment ( repetition 3 num_samples 10 probability 0.9 )
+Rng seed: 1744201404910671
+Running experiment ( repetition 4 num_samples 10 probability 0.9 )
+Rng seed: 1744201404910815
+mean 0.9 std 0.06324555320336757
+Running experiment ( repetition 0 num_samples 50 probability 0.5 )
+Rng seed: 1744201404911052
+Running experiment ( repetition 1 num_samples 50 probability 0.5 )
+Rng seed: 1744201404911187
+Running experiment ( repetition 2 num_samples 50 probability 0.5 )
+Rng seed: 1744201404911314
+Running experiment ( repetition 3 num_samples 50 probability 0.5 )
+Rng seed: 1744201404911438
+Running experiment ( repetition 4 num_samples 50 probability 0.5 )
+Rng seed: 1744201404911563
+mean 0.476 std 0.019595917942265423
+Running experiment ( repetition 0 num_samples 50 probability 0.75 )
+Rng seed: 1744201404911806
+Running experiment ( repetition 1 num_samples 50 probability 0.75 )
+Rng seed: 1744201404911941
+Running experiment ( repetition 2 num_samples 50 probability 0.75 )
+Rng seed: 1744201404912088
+Running experiment ( repetition 3 num_samples 50 probability 0.75 )
+Rng seed: 1744201404912217
+Running experiment ( repetition 4 num_samples 50 probability 0.75 )
+Rng seed: 1744201404912340
+mean 0.756 std 0.061188234163113406
+Running experiment ( repetition 0 num_samples 50 probability 0.9 )
+Rng seed: 1744201404912579
+Running experiment ( repetition 1 num_samples 50 probability 0.9 )
+Rng seed: 1744201404912709
+Running experiment ( repetition 2 num_samples 50 probability 0.9 )
+Rng seed: 1744201404912851
+Running experiment ( repetition 3 num_samples 50 probability 0.9 )
+Rng seed: 1744201404912974
+Running experiment ( repetition 4 num_samples 50 probability 0.9 )
+Rng seed: 1744201404913096
+mean 0.908 std 0.02399999999999999
