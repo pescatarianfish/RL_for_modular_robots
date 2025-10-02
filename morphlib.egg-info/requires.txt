@@ -1,4 +1,0 @@
-numpy
-dm_control
-pyrr
-jinja2
