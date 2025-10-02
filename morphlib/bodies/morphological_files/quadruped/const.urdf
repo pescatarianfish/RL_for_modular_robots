@@ -1,0 +1,186 @@
+{% set obs_low=obs_low | default('-inf') %}
+{% set obs_high=obs_high | default('inf') %}
+{% set obs_shape=obs_shape | default((28,))%}
+
+{% set act_low=obs_low | default(-1) %}
+{% set act_high=obs_high | default(1) %}
+{% set act_shape=obs_shape | default((12,))%}
+
+<!-- Constants for robot dimensions -->
+{% set PI=PI | default(3.1415926535897931) %}
+{% set stick_mass=stick_mass | default(0.00001) %}
+
+{% set morph_params=morph_params | default({
+    'trunk_width' : 0.194,
+    'trunk_length': 0.267,
+    'trunk_height': 0.114,
+    'hip_radius_FR' : 0.046,'hip_radius_FL' : 0.046,'hip_radius_RR' : 0.046,'hip_radius_RL' : 0.046,
+    'hip_length_FR' : 0.04,'hip_length_FL' : 0.04,'hip_length_RR' : 0.04,'hip_length_RL' : 0.04,
+    'thigh_shoulder_radius_FR' : 0.041,'thigh_shoulder_radius_FL' : 0.041,'thigh_shoulder_radius_RR' : 0.041,'thigh_shoulder_radius_RL' : 0.041,
+    'thigh_shoulder_length_FR' : 0.032,'thigh_shoulder_length_FL' : 0.032,'thigh_shoulder_length_RR' : 0.032,'thigh_shoulder_length_RL' : 0.032,
+    'thigh_width_FR' : 0.0245,'thigh_width_FL' : 0.0245,'thigh_width_RR' : 0.0245,'thigh_width_RL' : 0.0245,
+    'thigh_height_FR' : 0.034,'thigh_height_FL' : 0.034,'thigh_height_RR' : 0.034,'thigh_height_RL' : 0.034,
+    'calf_width_FR' : 0.016,'calf_width_FL' : 0.016,'calf_width_RR' : 0.016,'calf_width_RL' : 0.016,
+    'calf_height_FR' : 0.016,'calf_height_FL' : 0.016,'calf_height_RR' : 0.016,'calf_height_RL' : 0.016,
+    'foot_radius_FR' : 0.02,'foot_radius_FL' : 0.02,'foot_radius_RR' : 0.02,'foot_radius_RL' : 0.02,
+    'stick_radius' : 0.01,
+    'stick_length' : 0.2,
+
+    'thigh_offset_FR' : 0.0838,'thigh_offset_FL' : 0.0838,'thigh_offset_RR' : 0.0838,'thigh_offset_RL' : 0.0838,
+    'thigh_length_FR' : 0.2,'thigh_length_FL' : 0.2,'thigh_length_RR' : 0.2,'thigh_length_RL' : 0.2,
+    'calf_length_FR' : 0.2,'calf_length_FL' : 0.2,'calf_length_RR' : 0.2,'calf_length_RL' : 0.2,
+
+    'leg_offset_x_FR' : 0.1805,'leg_offset_x_FL' : 0.1805,'leg_offset_x_RR' : -0.1805,'leg_offset_x_RL' : -0.1805,
+    'leg_offset_y_FR' : -0.047,'leg_offset_y_FL' : 0.047,'leg_offset_y_RR' : -0.047,'leg_offset_y_RL' : 0.047,
+    'trunk_offset_z' : 0.01675,
+    'hip_offset_FR' : 0.065,'hip_offset_FL' : 0.065,'hip_offset_RR' : 0.065,'hip_offset_RL' : 0.065,
+
+    'damping_FR' : 0,'damping_FL' : 0,'damping_RR' : 0,'damping_RL' : 0,
+    'friction_FR' : 0,'friction_FL' : 0,'friction_RR' : 0,'friction_RL' : 0,
+    'hip_max_FR' : 46,'hip_max_FL' : 46,'hip_max_RR' : 46,'hip_max_RL' : 46,
+    'hip_min_FR' : -46,'hip_min_FL' : -46,'hip_min_RR' : -46,'hip_min_RL' : -46,
+    'hip_velocity_max_FR' : 21,'hip_velocity_max_FL' : 21,'hip_velocity_max_RR' : 21,'hip_velocity_max_RL' : 21,
+    'hip_torque_max_FR' : 33.5,'hip_torque_max_FL' : 33.5,'hip_torque_max_RR' : 33.5,'hip_torque_max_RL' : 33.5,
+    'thigh_max_FR' : 240,'thigh_max_FL' : 240,'thigh_max_RR' : 240,'thigh_max_RL' : 240,
+    'thigh_min_FR' : -60,'thigh_min_FL' : -60,'thigh_min_RR' : -60,'thigh_min_RL' : -60,
+    'thigh_velocity_max_FR' : 21,'thigh_velocity_max_FL' : 21,'thigh_velocity_max_RR' : 21,'thigh_velocity_max_RL' : 21,
+    'thigh_torque_max_FR' : 33.5,'thigh_torque_max_FL' : 33.5,'thigh_torque_max_RR' : 33.5,'thigh_torque_max_RL' : 33.5,
+    'calf_max_FR' : -52.5,'calf_max_FL' : -52.5,'calf_max_RR' : -52.5,'calf_max_RL' : -52.5,
+    'calf_min_FR' : -154.5,'calf_min_FL' : -154.5,'calf_min_RR' : -154.5,'calf_min_RL' : -154.5,
+    'calf_velocity_max_FR' : 21,'calf_velocity_max_FL' : 21,'calf_velocity_max_RR' : 21,'calf_velocity_max_RL' : 21,
+    'calf_torque_max_FR' : 33.5,'calf_torque_max_FL' : 33.5,'calf_torque_max_RR' : 33.5,'calf_torque_max_RL' : 33.5,
+
+    'trunk_mass' : 6.0,
+    'trunk_com_x' : 0.0000,
+    'trunk_com_y' : 0.0041,
+    'trunk_com_z' : -0.0005,
+    'trunk_ixx' : 0.0158533,
+    'trunk_ixy' : -0.0000366,
+    'trunk_ixz' : -0.0000611,
+    'trunk_iyy' : 0.0377999,
+    'trunk_iyz' : -0.0000275,
+    'trunk_izz' : 0.0456542,
+
+    'hip_mass_FR' : 0.696, 'hip_mass_FL' : 0.696, 'hip_mass_RR' : 0.696, 'hip_mass_RL' : 0.696,
+    'hip_com_x_FR' : -0.003311,'hip_com_x_FL' : -0.003311,'hip_com_x_RR' : -0.003311,'hip_com_x_RL' : -0.003311,
+    'hip_com_y_FR' : 0.000635,'hip_com_y_FL' : 0.000635,'hip_com_y_RR' : 0.000635,'hip_com_y_RL' : 0.000635,
+    'hip_com_z_FR' : 0.000031,'hip_com_z_FL' : 0.000031,'hip_com_z_RR' : 0.000031,'hip_com_z_RL' : 0.000031,
+    'hip_ixx_FR' : 0.000469246,'hip_ixx_FL' : 0.000469246,'hip_ixx_RR' : 0.000469246,'hip_ixx_RL' : 0.000469246,
+    'hip_ixy_FR' : -0.000009409,'hip_ixy_FL' : -0.000009409,'hip_ixy_RR' : -0.000009409,'hip_ixy_RL' : -0.000009409,
+    'hip_ixz_FR' : -0.000000342,'hip_ixz_FL' : -0.000000342,'hip_ixz_RR' : -0.000000342,'hip_ixz_RL' : -0.000000342,
+    'hip_iyy_FR' : 0.000807490,'hip_iyy_FL' : 0.000807490,'hip_iyy_RR' : 0.000807490,'hip_iyy_RL' : 0.000807490,
+    'hip_iyz_FR' : -0.000000466,'hip_iyz_FL' : -0.000000466,'hip_iyz_RR' : -0.000000466,'hip_iyz_RL' : -0.000000466,
+    'hip_izz_FR' : 0.000552929,'hip_izz_FL' : 0.000552929,'hip_izz_RR' : 0.000552929,'hip_izz_RL' : 0.000552929,
+
+    'thigh_mass_FR' : 1.013,'thigh_mass_FL' : 1.013,'thigh_mass_RR' : 1.013,'thigh_mass_RL' : 1.013,
+    'thigh_com_x_FR' : -0.003237,'thigh_com_x_FL' : -0.003237,'thigh_com_x_RR' : -0.003237,'thigh_com_x_RL' : -0.003237,
+    'thigh_com_y_FR' : -0.022327,'thigh_com_y_FL' : -0.022327,'thigh_com_y_RR' : -0.022327,'thigh_com_y_RL' : -0.022327,
+    'thigh_com_z_FR' : -0.027326,'thigh_com_z_FL' : -0.027326,'thigh_com_z_RR' : -0.027326,'thigh_com_z_RL' : -0.027326,
+    'thigh_ixx_FR' : 0.005529065,'thigh_ixx_FL' : 0.005529065,'thigh_ixx_RR' : 0.005529065,'thigh_ixx_RL' : 0.005529065,
+    'thigh_ixy_FR' : 0.000004825,'thigh_ixy_FL' : 0.000004825,'thigh_ixy_RR' : 0.000004825,'thigh_ixy_RL' : 0.000004825,
+    'thigh_ixz_FR' : 0.000343869,'thigh_ixz_FL' : 0.000343869,'thigh_ixz_RR' : 0.000343869,'thigh_ixz_RL' : 0.000343869,
+    'thigh_iyy_FR' : 0.005139339,'thigh_iyy_FL' : 0.005139339,'thigh_iyy_RR' : 0.005139339,'thigh_iyy_RL' : 0.005139339,
+    'thigh_iyz_FR' : 0.000022448,'thigh_iyz_FL' : 0.000022448,'thigh_iyz_RR' : 0.000022448,'thigh_iyz_RL' : 0.000022448,
+    'thigh_izz_FR' : 0.001367788,'thigh_izz_FL' : 0.001367788,'thigh_izz_RR' : 0.001367788,'thigh_izz_RL' : 0.001367788,
+
+    'calf_mass_FR' : 0.166,'calf_mass_FL' : 0.166,'calf_mass_RR' : 0.166,'calf_mass_RL' : 0.166,
+    'calf_com_x_FR' : 0.006435,'calf_com_x_FL' : 0.006435,'calf_com_x_RR' : 0.006435,'calf_com_x_RL' : 0.006435,
+    'calf_com_y_FR' : 0.0,'calf_com_y_FL' : 0.0,'calf_com_y_RR' : 0.0,'calf_com_y_RL' : 0.0,
+    'calf_com_z_FR' : -0.107388,'calf_com_z_FL' : -0.107388,'calf_com_z_RR' : -0.107388,'calf_com_z_RL' : -0.107388,
+    'calf_ixx_FR' : 0.002997972,'calf_ixx_FL' : 0.002997972,'calf_ixx_RR' : 0.002997972,'calf_ixx_RL' : 0.002997972,
+    'calf_ixy_FR' : 0.0,'calf_ixy_FL' : 0.0,'calf_ixy_RR' : 0.0,'calf_ixy_RL' : 0.0,
+    'calf_ixz_FR' : -0.000141163,'calf_ixz_FL' : -0.000141163,'calf_ixz_RR' : -0.000141163,'calf_ixz_RL' : -0.000141163,
+    'calf_iyy_FR' : 0.003014022,'calf_iyy_FL' : 0.003014022,'calf_iyy_RR' : 0.003014022,'calf_iyy_RL' : 0.003014022,
+    'calf_iyz_FR' : 0.0,'calf_iyz_FL' : 0.0,'calf_iyz_RR' : 0.0,'calf_iyz_RL' : 0.0,
+    'calf_izz_FR' : 0.000032426,'calf_izz_FL' : 0.000032426,'calf_izz_RR' : 0.000032426,'calf_izz_RL' : 0.000032426,
+
+    'foot_mass_FR' : 0.06,'foot_mass_FL' : 0.06,'foot_mass_RR' : 0.06,'foot_mass_RL' : 0.06
+}) %}
+
+{% set morph_limits=morph_limits | default({
+
+    'trunk_width' : [0.194, 0.194],
+    'trunk_length' : [0.267, 0.267],
+    'trunk_height' : [0.114, 0.114],
+    'hip_radius' : [0.046, 0.046],
+    'hip_length' : [0.04, 0.04],
+    'thigh_shoulder_radius' : [0.041, 0.041],
+    'thigh_shoulder_length' : [0.032, 0.032],
+    'thigh_width' : [0.0245, 0.0245],
+    'thigh_height' : [0.034, 0.034],
+    'calf_width' : [0.016, 0.016],
+    'calf_height' : [0.016, 0.016],
+    'foot_radius' : [0.02, 0.02],
+    'stick_radius' : [0.01, 0.01],
+    'stick_length' : [0.2, 0.2],
+
+    'thigh_offset' : [0.0838, 0.0838],
+    'thigh_length' : [0.2, 0.2],
+    'calf_length' : [0.2, 0.2],
+
+    'leg_offset_x' : [0.1805, 0.1805],
+    'leg_offset_y' : [0.047, 0.047],
+    'trunk_offset_z' : [0.01675, 0.01675],
+    'hip_offset' : [0.065, 0.065],
+
+    'damping' : [0, 0],
+    'friction' : [0, 0],
+    'hip_max' : [46, 46],
+    'hip_min' : [-46, -46],
+    'hip_velocity_max' : [21, 21],
+    'hip_torque_max' : [33.5, 33.5],
+    'thigh_max' : [240, 240],
+    'thigh_min' : [-60, -60],
+    'thigh_velocity_max' : [21, 21],
+    'thigh_torque_max' : [33.5, 33.5],
+    'calf_max' : [-52.5, -52.5],
+    'calf_min' : [-154.5, -154.5],
+    'calf_velocity_max' : [21, 21],
+    'calf_torque_max' : [33.5, 33.5],
+
+    'trunk_mass' : [6.0, 6.0],
+    'trunk_com_x' : [0.0000, 0.0000],
+    'trunk_com_y' : [0.0041, 0.0041],
+    'trunk_com_z' : [-0.0005, -0.0005],
+    'trunk_ixx' : [0.0158533, 0.0158533],
+    'trunk_ixy' : [-0.0000366, -0.0000366],
+    'trunk_ixz' : [-0.0000611, -0.0000611],
+    'trunk_iyy' : [0.0377999, 0.0377999],
+    'trunk_iyz' : [-0.0000275, -0.0000275],
+    'trunk_izz' : [0.0456542, 0.0456542],
+
+    'hip_mass' : [0.696, 0.696],
+    'hip_com_x' : [-0.003311, -0.003311],
+    'hip_com_y' : [0.000635, 0.000635],
+    'hip_com_z' : [0.000031, 0.000031],
+    'hip_ixx' : [0.000469246, 0.000469246],
+    'hip_ixy' : [-0.000009409, -0.000009409],
+    'hip_ixz' : [-0.000000342, -0.000000342],
+    'hip_iyy' : [0.000807490, 0.000807490],
+    'hip_iyz' : [-0.000000466, -0.000000466],
+    'hip_izz' : [0.000552929, 0.000552929],
+
+    'thigh_mass' : [1.013, 1.013],
+    'thigh_com_x' : [-0.003237, -0.003237],
+    'thigh_com_y' : [-0.022327, -0.022327],
+    'thigh_com_z' : [-0.027326, -0.027326],
+    'thigh_ixx' : [0.005529065, 0.005529065],
+    'thigh_ixy' : [0.000004825, 0.000004825],
+    'thigh_ixz' : [0.000343869, 0.000343869],
+    'thigh_iyy' : [0.005139339, 0.005139339],
+    'thigh_iyz' : [0.000022448, 0.000022448],
+    'thigh_izz' : [0.001367788, 0.001367788],
+
+    'calf_mass' : [0.166, 0.166],
+    'calf_com_x' : [0.006435, 0.006435],
+    'calf_com_y' : [0.0, 0.0],
+    'calf_com_z' : [-0.107388, -0.107388],
+    'calf_ixx' : [0.002997972, 0.002997972],
+    'calf_ixy' : [0.0, 0.0],
+    'calf_ixz' : [-0.000141163, -0.000141163],
+    'calf_iyy' : [0.003014022, 0.003014022],
+    'calf_iyz' : [0.0, 0.0],
+    'calf_izz' : [0.000032426, 0.000032426],
+
+    'foot_mass' : [0.06, 0.06]
+}) %}

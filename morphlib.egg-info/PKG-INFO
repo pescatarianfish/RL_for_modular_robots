@@ -1,0 +1,17 @@
+Metadata-Version: 2.4
+Name: morphlib
+Version: 0.0.1
+Summary: A unified coadaptation framework
+Author: Jed Muff
+Author-email: jed.muff@vu.nl
+Classifier: Programming Language :: Python :: 3
+Classifier: Operating System :: OS Independent
+Requires-Dist: numpy
+Requires-Dist: dm_control
+Requires-Dist: pyrr
+Requires-Dist: jinja2
+Dynamic: author
+Dynamic: author-email
+Dynamic: classifier
+Dynamic: requires-dist
+Dynamic: summary

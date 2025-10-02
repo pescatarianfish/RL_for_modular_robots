@@ -174,8 +174,8 @@ def main() -> None:
         batch_parameters=make_standard_batch_parameters(),
         scenes=scene,
     )
-    print(help(ModularRobot))
-    print(help(Brain))
+    # print(help(ModularRobot))
+    print(help())
 
 if __name__ == "__main__":
     main()

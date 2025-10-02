@@ -1,0 +1,32 @@
+{% macro leg_transmission(name) -%}
+    <transmission name="{{name}}_hip_tran">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="{{name}}_hip_joint">
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="{{name}}_hip_motor">
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+    <transmission name="{{name}}_upper_tran">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="{{name}}_upper_joint">
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="{{name}}_upper_motor">
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+    <transmission name="{{name}}_lower_tran">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="{{name}}_lower_joint">
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="{{name}}_lower_motor">
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+{%- endmacro %}

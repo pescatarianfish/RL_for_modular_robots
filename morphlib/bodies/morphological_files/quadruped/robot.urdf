@@ -1,0 +1,184 @@
+
+
+<?xml version="1.0"?>
+<robot name="a1_description" xmlns:xacro="http://www.ros.org/wiki/xacro">
+    {% from "const.urdf" import morph_params as mp with context%}
+    {% from "const.urdf" import PI, stick_mass with context %}
+    {% include "materials.urdf" %}
+    {% from "leg.urdf" import leg with context %}
+    {% from "stairs.urdf" import stairs with context %}
+    {% set rolloverProtection=rolloverProtection | default(false) %}
+    {% include "gazebo.urdf" %}
+    <link name="world"/>
+    <joint name="base_hip_static_joint" type="fixed">
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <parent link="world"/>
+        <child link="base_hip_"/>
+    </joint>
+
+    <link name="base_hip_">
+        <visual>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <box size="0.001 0.001 0.001"/>
+            </geometry>
+        </visual>
+        <inertial>
+         <mass value="1.0"/>
+         <origin rpy="0 0 0" xyz="0 0 0"/>
+         <inertia ixx="1.0" ixy="0" ixz="0" iyy="1.0" iyz="0" izz="1.0"/>
+      </inertial>
+    </link>
+
+	<joint name="x_to_world_hip__" type="prismatic">
+      <parent link="base_hip_"/>
+      <child link="x_prismatic"/>
+      <axis xyz="1 0 0"/>
+      <limit effort="0.0" lower="1" upper="-1" velocity="1000.0"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </joint>
+
+	<link name="x_prismatic">
+	  <inertial>
+        <mass value="0.01"/>
+        <inertia ixx="0.2125" ixy="-0.005" ixz="0.0225" iyy="0.205" iyz="0.045" izz="0.0125"/>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+      </inertial>
+	</link>
+
+	<joint name="z_to_y_hip__" type="prismatic">
+      <parent link="x_prismatic"/>
+      <child link="z_prismatic"/>
+      <axis xyz="0 0 1"/>
+      <limit effort="0.0" lower="1" upper="-1" velocity="1000.0"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </joint>
+
+	<link name="z_prismatic">
+	  <inertial>
+        <mass value="0.01"/>
+        <inertia ixx="0.2125" ixy="-0.005" ixz="0.0225" iyy="0.205" iyz="0.045" izz="0.0125"/>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+      </inertial>
+	</link>
+	
+    <joint name="floating_hip_base" type="continuous">
+        {% set FR_height = mp['thigh_length_FR'] + mp['calf_length_FR'] + mp['foot_radius_FR']%}
+        {% set FL_height = mp['thigh_length_FL'] + mp['calf_length_FL'] + mp['foot_radius_FL']%}
+        {% set RR_height = mp['thigh_length_RR'] + mp['calf_length_RR'] + mp['foot_radius_RR']%}
+        {% set RL_height = mp['thigh_length_RL'] + mp['calf_length_RL'] + mp['foot_radius_RL']%}
+        {% set leg_heights = {'_FR':FR_height, '_FL':FL_height, '_RR':RR_height, '_RL':RL_height}%}
+        {% set max_leg = leg_heights|dictsort(false,'value')|last %}
+        {% set max_thigh = mp['thigh_length'+max_leg[0]] %}
+        {% set max_calf = mp['calf_length'+max_leg[0]] %}
+
+        {% set cos_angle = 0.0707 %}
+        {% set num=max_thigh*max_thigh + max_calf*max_calf - (2 * max_thigh * max_calf * cos_angle) %}
+        {% set sqrt = (((1+(num/1))/2+(num/(1+(num/1))/2))/2+(num/((1+(num/1))/2+(num/(1+(num/1))/2))/2))/2 %}
+        <axis xyz="0 1 0"/>
+        <origin rpy="0 0 0" xyz="0 0 {{sqrt-mp['trunk_height']/2}}"/>
+        <parent link="z_prismatic"/>
+        <child link="trunk"/>
+    </joint>
+    
+    <link name="trunk">
+        <visual>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <box size="{{mp['trunk_length']}} {{mp['trunk_width']}} {{mp['trunk_height']}}"/>
+            </geometry>
+        </visual>
+        <collision>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <box size="{{mp['trunk_length']}} {{mp['trunk_width']}} {{mp['trunk_height']}}"/>
+            </geometry>
+        </collision>
+        <inertial>
+            <origin rpy="0 0 0" xyz="{{mp['trunk_com_x']}} {{mp['trunk_com_y']}} {{mp['trunk_com_z']}}"/>
+            <mass value="{{mp['trunk_mass']}}"/>
+            <inertia
+                ixx="{{mp['trunk_ixx']}}" ixy="{{mp['trunk_ixy']}}" ixz="{{mp['trunk_ixz']}}"
+                iyy="{{mp['trunk_iyy']}}" iyz="{{mp['trunk_iyz']}}"
+                izz="{{mp['trunk_izz']}}"/>  
+        </inertial>
+    </link>
+    {% if rolloverProtection %}
+        <joint name="stick_joint" type="fixed">
+            <parent link="trunk"/>
+            <child link="stick_link"/>
+            <origin rpy="0 0 0" xyz="{{0.18}} 0 {{mp['stick_length']/2.0+0.08}}"/>
+        </joint>
+        <link name="stick_link">
+            <visual>
+                <geometry>
+                    <cylinder length="{{mp['stick_length']}}" radius="{{mp['stick_radius']}}"/>
+                </geometry>
+                <origin rpy="0 0 0" xyz="0 0 0"/>
+                <material name="white"/>
+            </visual>
+            <collision>
+                <geometry>
+                    <cylinder length="{{mp['stick_length']}}" radius="{{mp['stick_radius']}}"/>
+                </geometry>
+                <origin rpy="0 0 0" xyz="0 0 0"/>
+            </collision>
+            <inertial>
+                <mass value="{{stick_mass}}"/>
+                <inertia
+                    ixx="{{stick_mass / 2.0 * (mp['stick_radius']*mp['stick_radius'])}}" ixy="0.0" ixz="0.0"
+                    iyy="{{stick_mass / 12.0 * (3*mp['stick_radius']*mp['stick_radius'] + mp['stick_length']*mp['stick_length'])}}" iyz="0.0"
+                    izz="{{stick_mass / 12.0 * (3*mp['stick_radius']*mp['stick_radius'] + mp['stick_length']*mp['stick_length'])}}"/>                   
+            </inertial>
+        </link>
+    {% endif %}  
+    <joint name="imu_joint" type="fixed">
+      <parent link="trunk"/>
+      <child link="imu_link"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </joint>
+    <link name="imu_link">
+      <inertial>
+        <mass value="0.001"/>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001"/>
+      </inertial>
+      <visual>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <geometry>
+          <box size="0.001 0.001 0.001"/>
+        </geometry>
+        <material name="red"/>
+      </visual>
+      <collision>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <geometry>
+          <box size=".001 .001 .001"/>
+        </geometry>
+      </collision>
+    </link>
+
+
+    {% set leg_parameter_names=['leg_offset_x', 'leg_offset_y', 'damping', 'friction', 'hip_torque_max', 'hip_velocity_max', 'hip_min', 'hip_max', 'hip_length', 'hip_radius', 'hip_com_x', 'hip_com_y', 'hip_com_z', 'hip_mass', 'hip_ixx', 'hip_ixy', 'hip_ixz', 'hip_iyy', 'hip_iyz', 'hip_izz', 'thigh_shoulder_length', 'hip_offset', 'thigh_shoulder_radius', 'thigh_offset', 'thigh_torque_max', 'thigh_velocity_max', 'thigh_min', 'thigh_max', 'thigh_length', 'thigh_width', 'thigh_height', 'thigh_com_x', 'thigh_com_y', 'thigh_com_z', 'thigh_mass', 'thigh_ixx', 'thigh_ixy', 'thigh_ixz', 'thigh_iyy', 'thigh_iyz', 'thigh_izz', 'calf_torque_max', 'calf_velocity_max', 'calf_min', 'calf_max', 'calf_length', 'calf_width', 'calf_height', 'calf_com_x', 'calf_com_y', 'calf_com_z', 'calf_ixx', 'calf_ixy', 'calf_ixz', 'calf_iyy', 'calf_iyz', 'calf_izz', 'foot_radius', 'foot_mass'] %}
+    {% set lp = {} %}
+
+    {% for param_name in leg_parameter_names %}
+        {% set x=lp.__setitem__(param_name, mp[param_name+'_FR']) %}
+    {% endfor %}
+    {{leg(name="FR", mirror=-1, mirror_dae=false, front_hind=1, front_hind_dae=true, rpy="0 0 0", leg_params=lp)}}
+    
+    {% for param_name in leg_parameter_names %}
+        {% set x=lp.__setitem__(param_name, mp[param_name+'_FL']) %}
+    {% endfor %}
+    {{leg(name="FL", mirror=1, mirror_dae=true, front_hind=1, front_hind_dae=true, rpy="0 0 0", leg_params=lp)}}
+    
+    {% for param_name in leg_parameter_names %}
+        {% set x=lp.__setitem__(param_name, mp[param_name+'_RR']) %}
+    {% endfor %}
+    {{leg(name="RR", mirror=-1, mirror_dae=false, front_hind=-1, front_hind_dae=false, rpy="0 0 0", leg_params=lp)}}
+    
+    {% for param_name in leg_parameter_names %}
+        {% set x=lp.__setitem__(param_name, mp[param_name+'_RL']) %}
+    {% endfor %}
+    {{leg(name="RL", mirror=1, mirror_dae=true, front_hind=-1, front_hind_dae=false, rpy="0 0 0", leg_params=lp)}}
+</robot>

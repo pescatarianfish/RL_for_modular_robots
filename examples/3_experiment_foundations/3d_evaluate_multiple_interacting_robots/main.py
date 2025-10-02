@@ -57,6 +57,7 @@ def main() -> None:
         scenes=scene,
     )
 
+
     # Calculate the xy displacements.
     xy_displacements = [
         fitness_functions.xy_displacement(

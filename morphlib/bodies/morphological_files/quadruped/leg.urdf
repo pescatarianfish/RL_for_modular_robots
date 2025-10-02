@@ -1,0 +1,146 @@
+{% from "transmission.urdf" import leg_transmission%}
+{% macro leg(name, mirror, mirror_dae, front_hind, front_hind_dae, rpy, leg_params) -%}
+    <joint name="{{name}}_hip_joint" type="revolute">
+        <origin rpy="{{rpy}}" xyz="{{leg_params['leg_offset_x']}} {{leg_params['leg_offset_y']}} 0"/>
+        <parent link="trunk"/>
+        <child link="{{name}}_hip"/>
+        <axis xyz="1 0 0"/>
+        <dynamics damping="{{leg_params['damping']}}" friction="{{leg_params['friction']}}"/>
+        {% if mirror_dae %}
+        <limit effort="{{leg_params['hip_torque_max']}}" velocity="{{leg_params['hip_velocity_max']}}" lower="{{leg_params['hip_min']*PI/180.0}}" upper="{{leg_params['hip_max']*PI/180.0}}"/>
+        {% else %}
+        <limit effort="{{leg_params['hip_torque_max']}}" velocity="{{leg_params['hip_velocity_max']}}" lower="{{+-leg_params['hip_max']*PI/180.0}}" upper="{{+-leg_params['hip_min']*PI/180.0}}"/>
+        {% endif %}           
+    </joint>
+    <link name="{{name}}_hip">
+        <visual>
+            <origin rpy="{{PI/2.0}} 0 0" xyz="0 0 0"/>
+            <geometry>
+                <cylinder length="{{leg_params['hip_length']}}" radius="{{leg_params['hip_radius']}}"/>
+            </geometry>
+            <material name="orange"/>
+        </visual>
+        <collision>
+            <origin rpy="{{PI/2.0}} 0 0" xyz="0 0 0"/>
+            <geometry>
+                <cylinder length="{{leg_params['hip_length']}}" radius="{{leg_params['hip_radius']}}"/>
+            </geometry>
+        </collision>
+        <inertial>
+            <origin rpy="0 0 0" xyz="{{leg_params['hip_com_x']*front_hind}} {{leg_params['hip_com_y']*mirror}} {{leg_params['hip_com_z']}}"/>
+            <mass value="{{leg_params['hip_mass']}}"/>
+            <inertia
+                ixx="{{leg_params['hip_ixx']}}" ixy="{{leg_params['hip_ixy']*mirror*front_hind}}" ixz="{{leg_params['hip_ixz']*front_hind}}"
+                iyy="{{leg_params['hip_iyy']}}" iyz="{{leg_params['hip_iyz']*mirror}}"
+                izz="{{leg_params['hip_izz']}}"/>       
+        </inertial>
+    </link>
+    <joint name="{{name}}_hip_fixed" type="fixed">
+        <origin rpy="0 0 0" xyz="0 {{(leg_params['thigh_shoulder_length']/2.0+leg_params['hip_offset'])*mirror}} 0"/>
+        <parent link="{{name}}_hip"/>
+        <child link="{{name}}_upper_shoulder"/>
+    </joint>
+    <!-- this link is only for collision -->
+    <link name="{{name}}_upper_shoulder">
+        <inertial>
+        <mass value="0.001"/>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001"/>
+        </inertial>
+        <collision>
+            <origin rpy="{{PI/2.0}} 0 0" xyz="0 0 0"/>
+            <geometry>
+                <cylinder length="{{leg_params['thigh_shoulder_length']}}" radius="{{leg_params['thigh_shoulder_radius']}}"/>
+            </geometry>
+        </collision>
+    </link>
+    <joint name="{{name}}_upper_joint" type="revolute">
+        <origin rpy="0 0 0" xyz="0 {{leg_params['thigh_offset']*mirror}} 0"/>
+        <parent link="{{name}}_hip"/>
+        <child link="{{name}}_thigh"/>
+        <axis xyz="0 1 0"/>
+        <dynamics damping="{{leg_params['damping']}}" friction="{{leg_params['friction']}}"/>
+        <limit effort="{{leg_params['thigh_torque_max']}}" velocity="{{leg_params['thigh_velocity_max']}}" lower="{{leg_params['thigh_min']*PI/180.0}}" upper="{{leg_params['thigh_max']*PI/180.0}}"/>
+    </joint>
+    <link name="{{name}}_thigh">
+        <visual>
+            <origin rpy="0 {{PI/2.0}} 0" xyz="0 0 {{+-leg_params['thigh_length']/2.0}}"/>
+            <geometry>
+              <box size="{{leg_params['thigh_length']}} {{leg_params['thigh_width']}} {{leg_params['thigh_height']}}"/>
+            </geometry>     
+            <material name="orange"/>
+        </visual>
+        <collision>
+            <origin rpy="0 {{PI/2.0}} 0" xyz="0 0 {{+-leg_params['thigh_length']/2.0}}"/>
+            <geometry>
+              <box size="{{leg_params['thigh_length']}} {{leg_params['thigh_width']}} {{leg_params['thigh_height']}}"/>
+            </geometry>      
+        </collision>
+        <inertial>
+            <origin rpy="0 0 0" xyz="{{leg_params['thigh_com_x']}} {{leg_params['thigh_com_y']*mirror}} {{leg_params['thigh_com_z']}}"/>
+            <mass value="{{leg_params['thigh_mass']}}"/>
+            <inertia
+                ixx="{{leg_params['thigh_ixx']}}" ixy="{{leg_params['thigh_ixy']*mirror}}" ixz="{{leg_params['thigh_ixz']}}"
+                iyy="{{leg_params['thigh_iyy']}}" iyz="{{leg_params['thigh_iyz']*mirror}}"
+                izz="{{leg_params['thigh_izz']}}"/>       
+        </inertial>
+    </link>
+    <joint name="{{name}}_lower_joint" type="revolute">
+        <origin rpy="0 0 0" xyz="0 0 {{+-leg_params['thigh_length']}}"/>
+        <parent link="{{name}}_thigh"/>
+        <child link="{{name}}_calf"/>
+        <axis xyz="0 1 0"/>
+        <dynamics damping="{{leg_params['damping']}}" friction="{{leg_params['friction']}}"/>
+        <limit effort="{{leg_params['calf_torque_max']}}" velocity="{{leg_params['calf_velocity_max']}}" lower="{{leg_params['calf_min']*PI/180.0}}" upper="{{leg_params['calf_max']*PI/180.0}}"/>
+    </joint>
+    <link name="{{name}}_calf">
+        <visual>
+            <origin rpy="0 {{PI/2.0}} 0" xyz="0 0 {{+-leg_params['calf_length']/2.0}}"/>
+            <geometry>
+                <box size="{{leg_params['calf_length']}} {{leg_params['calf_width']}} {{leg_params['calf_height']}}"/>
+            </geometry>   
+        </visual>
+        <collision>
+            <origin rpy="0 {{PI/2.0}} 0" xyz="0 0 {{+-leg_params['calf_length']/2.0}}"/>
+            <geometry>
+                <box size="{{leg_params['calf_length']}} {{leg_params['calf_width']}} {{leg_params['calf_height']}}"/>
+            </geometry>      
+        </collision>
+        <inertial>
+            <origin rpy="0 0 0" xyz="{{leg_params['calf_com_x']}} {{leg_params['calf_com_y']}} {{leg_params['calf_com_z']}}"/>
+            <mass value="{{leg_params['calf_mass']}}"/>
+            <inertia
+                ixx="{{leg_params['calf_ixx']}}" ixy="{{leg_params['calf_ixy']}}" ixz="{{leg_params['calf_ixz']}}"
+                iyy="{{leg_params['calf_iyy']}}" iyz="{{leg_params['calf_iyz']}}"
+                izz="{{leg_params['calf_izz']}}"/>       
+        </inertial>
+    </link>
+    <joint name="{{name}}_toe_fixed" type="fixed">
+        <origin rpy="0 0 0" xyz="0 0 {{+-leg_params['calf_length']}}"/>
+        <parent link="{{name}}_calf"/>
+        <child link="{{name}}_toe"/>
+    </joint>
+    <link name="{{name}}_toe">
+        <visual>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <sphere radius="{{leg_params['foot_radius']}}"/>
+            </geometry>
+            <material name="orange"/>
+        </visual>
+        <collision>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <sphere radius="{{leg_params['foot_radius']}}"/>
+            </geometry>
+        </collision>
+        <inertial>
+            <mass value="{{leg_params['foot_mass']}}"/>
+            <inertia
+                ixx="{{(2*leg_params['foot_mass'])/5.0*(leg_params['foot_radius']*leg_params['foot_radius'])}}" ixy="0.0" ixz="0.0"
+                iyy="{{(2*leg_params['foot_mass'])/5.0*(leg_params['foot_radius']*leg_params['foot_radius'])}}" iyz="0.0"
+                izz="{{(2*leg_params['foot_mass'])/5.0*(leg_params['foot_radius']*leg_params['foot_radius'])}}"/>             
+        </inertial>
+    </link>
+    {{ leg_transmission(name) }}
+{%- endmacro %}

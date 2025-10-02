@@ -1,0 +1,36 @@
+{% set stair_length=stair_length | default(0.640) %}
+{% set stair_width=stair_width | default(0.310) %}
+{% set stair_height=stair_height | default(0.170) %}
+{% macro stairs(stairs, xpos, ypos, zpos) -%}
+    <joint name="stair_joint_origin" type="fixed">
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <parent link="world"/>
+        <child link="stair_link_{{stairs}}"/>
+    </joint>
+    <link name="stair_link_{{stairs}}">
+        <visual>
+            <geometry>
+                <box size="{{stair_length}} {{stair_width}} {{stair_height}}"/>
+            </geometry>
+            <material name="grey"/>
+            <origin rpy="0 0 0" xyz="{{xpos}} {{ypos}} {{zpos}}"/>
+        </visual>
+        <collision>
+            <geometry>
+                <box size="{{stair_length}} {{stair_width}} {{stair_height}}"/>
+            </geometry>
+        </collision>
+        <inertial>
+            <mass value="0.80"/>
+            <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100" />
+        </inertial>
+    </link>
+    {% if stairs %}
+        {% call stairs(stairs="{{stairs-1}}", xpos="0", ypos="{{ypos-stair_width/2}}", zpos="{{zpos+stair_height}}") %}
+        {% endcall %}
+        <joint name="stair_joint_{{stairs}}" type="fixed">
+            <parent link="stair_link_{{stairs}}"/>
+            <child link="stair_link_{{stairs-1}}"/>
+        </joint>
+    {% endif %} 
+{%- endmacro %}
